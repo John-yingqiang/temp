@@ -1,0 +1,163 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<title>借钱快手</title>
+<meta content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" id="viewport" name="viewport">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<base href="https://m.jieqiankuaishou.com/land/">
+<link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/index.css">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<script type="text/javascript" src="js/rem.js"></script>
+</head>
+
+<body>
+
+ <section class="wrap">
+  <div class="shenqin">
+  </div>
+    <ul class="shenqin-box">
+      <li> <img src="images/icon5.png" /> <strong>门槛低</strong>
+        <p>身份证即可贷</p>
+      </li>
+      <li> <img src="images/icon6.png" /> <strong>额度高</strong>
+        <p>500-5万元</p>
+      </li>
+      <li> <img src="images/icon7.png" /> <strong>放款快</strong>
+        <p>最快2分钟</p>
+      </li>
+      <li> <img src="images/icon8.png" /> <strong>利息低</strong>
+        <p>1千仅1元/天</p>
+      </li>
+    </ul>
+  </div>
+
+  <div class="shenqing-info">
+    <input type="text" id="number" placeholder="请输入您的手机号" class="tel" />
+  </div>
+  <div class="shenqing-info huoqu">
+    <input  id="code" type="text" placeholder="验证码" class="yzm-shur" />
+    <input id="submit" type="button" value="获取手机验证码" class="yzm-get" onclick="oncode()" />
+  </div>
+  <div class="shenqing-info">
+    <input id="apply" type="submit" value="免费申请" class="btn1" onclick="onapply()"/>
+  </div>
+
+</section>
+
+
+ <div style="display: none">
+
+     <script type="application/javascript">
+
+         var submit = document.getElementById('submit');
+         var apply = document.getElementById('apply');
+         var counter = 0;
+         var base = location.origin;
+
+         var agent = window.navigator.userAgent;
+         var isWechat = /MicroMessenger/.test(agent);
+         var isIOS = /iPad|iPhone|iPod/.test(agent) && !window.MSStream;
+         var isAndroid = /Android/i.test(agent) && !window.MSStream;
+         var sys = isIOS ? 'ios' : (isWechat? 'wechat': 'android');
+
+         function update() {
+             if (counter == 0){
+                submit.disabled = false;
+                 submit.value = "获取手机验证码";
+             }
+             else{
+                 submit.value = counter-- + "秒后重新获取";
+                 setTimeout(update, 1000);
+             }
+
+         }
+
+         function oncode() {
+            number = document.getElementById('number').value;
+            if (number.match(/^1\d{10}$/)){
+                submit.disabled = true;
+                counter = 60;
+                setTimeout(update, 0);
+                post(base+'/api/users/h5sms', "number="+number, function (e) {
+                    if (this.readyState == 4){
+                        if(this.status == 200){
+                            localStorage.sent = 1;
+                        }
+                        else{
+                            alert("发送错误！");
+                            counter = 3;
+                        }
+                    }
+
+                });
+            }
+            else{
+                alert("请输入正确的手机号！");
+            }
+         }
+
+         function onapply(){
+
+             if (!localStorage.sent){
+                 alert("未获取验证码！");
+                 return;
+             }
+
+            number = document.getElementById('number').value;
+            if (number.match(/^1\d{10}$/)){
+                code = document.getElementById('code').value;
+                if (code.match(/^\d{6}$/)){
+
+                    apply.disabled = true;
+                    apply.value = "请稍后...";
+                    var data = "number=" + number + "&code=" + code + "&sys=" +sys;
+                    post(base+"/api/users/apply", data, function () {
+                        if (this.readyState == 4){
+                            if(this.status == 200){
+                                ret = JSON.parse(this.responseText);
+                                console.log(ret);
+                                ondownload(ret);
+                            }
+                            else{
+                                alert("验证码错误！");
+                                apply.disabled = false;
+                                apply.value = "免费申请";
+                            }
+                        }
+                    });
+
+                }
+                else{
+                    alert("请输入正确的验证码！");
+                }
+            }
+            else{
+                alert("请输入正确的手机号！");
+            }
+
+         }
+
+        function post(url, data, callback) {
+            xhr = new XMLHttpRequest();
+            xhr.open('POST', url);
+            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded")
+            xhr.onreadystatechange = callback;
+            xhr.send(data);
+        }
+
+        function ondownload(url){
+            window.location.href = url;
+        }
+
+         cid = location.pathname.match(/\/h?(.+)x/)[1];
+         pv = parseInt(localStorage.hupv || 0);
+         post(base+'/data/huv/'+cid, "&v="+pv);
+         localStorage.hupv = pv + 1;
+
+     </script>
+
+</div>
+
+</body>
+</html>

@@ -1,0 +1,1 @@
+credit_coin_data = {}

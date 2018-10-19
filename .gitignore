@@ -1,0 +1,5 @@
+*.pyc
+.idea
+*.rdb
+/static/assets
+/static/jie
